@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Web App</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" />
+
+</head>
+<body>
+    <h1>Simple Web App</h1>
+    <div class="button-container">
+        <button onclick="showScreen('list-pod')">List Pods</button>
+        <button onclick="showScreen('create-pod')">Create Pod</button>
+        <!-- Thêm nút cho mỗi màn hình bạn muốn thêm -->
+    </div>
+    <div class="container">
+        <div id="list-pod" class="screen">
+            <button id="resetButton">Reset Table</button>
+            <div id="dataTable"></div>
+        </div>
+
+        <div id="create-pod" class="screen">        
+            <!-- <form id="dataForm">
+                <label for="dataInput">Enter data:</label>
+                <input type="text" id="dataInput" name="dataInput" required>
+                <button type="button" onclick="sendData()">Submit</button>
+            </form>
+        
+            <form id="dataForm2">
+                <label for="dataInputBash">Enter data bash:</label>
+                <input type="text" id="dataInputBash" name="dataInputBash" required>
+                <button type="button" onclick="sendDataBash()">Submit</button>
+            </form>
+         -->
+            <form id="dataForm3">
+                <label for="podName">Tên pod:</label>
+                <input type="text" id="podName" name="podName" required>
+        
+                <label for="nodeName">Node:</label>
+                <select id="nodeName" name="nodeName" required> </select>
+        
+                <button type="button" onclick="SendDataCreatePod()">Submit</button>
+            </form>
+
+            <form id="create_qos">
+                <label for="podName">Tên pod nguồn:</label>
+                <select id="podNameSource" class="podNameSelect" name="podNameSource" required> </select>
+        
+                <label for="nodeName">Tên pod đích:</label>
+                <select id="podNameDestination" class="podNameSelect" name="podNameDestination" required> </select>
+        
+                <label for="nodeName">Min:</label>
+                <input type="text" id="minBandwidth" name="minBandwidth" required>
+
+                <label for="nodeName">Max:</label>
+                <input type="text" id="maxBandwidth" name="maxBandwidth" required>
+
+                <button type="button" onclick="SendDataCreateQos()">Submit</button>
+            </form>
+            <button id="resetButton1">Reset Table</button>
+            <div id="queueTable"></div>
+        </div>
+    </div>
+
+    <script>
+        function sendData() {
+            var data = document.getElementById('dataInput').value;
+
+            fetch('/process_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ data: data }),
+            })           
+        }
+
+        function getListPodKubeOvn() {
+            fetch('/list_pods_kube_ovn')
+                .then(response => response.json())
+                .then(data => {
+                    const dataSelects = document.querySelectorAll('.podNameSelect');
+
+                    // Xóa tất cả các lựa chọn hiện có (nếu có)
+                    dataSelects.forEach(dataSelect => {
+                        dataSelect.innerHTML = '';
+                    });
+
+                    // Điền dữ liệu vào ô lựa chọn
+                    data.result.forEach(choice => {
+                        dataSelects.forEach(dataSelect => {
+                            const option = document.createElement('option');
+                            option.value = choice;  // Thay 'value' bằng tên thuộc tính cần sử dụng
+                            option.text = choice;
+                            dataSelect.add(option);
+                        });
+                    });
+                });
+        }
+
+        function sendDataBash() {
+            var data = document.getElementById('dataInputBash').value;
+
+            fetch('/process_data_bash', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ data: data }),
+            })           
+        }
+
+        function SendDataCreatePod() {
+            var podName = document.getElementById('podName').value;
+            var nodeName = document.getElementById('nodeName').value;
+
+            fetch('/create_pod', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    podName: podName,
+                    nodeName: nodeName,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Xử lý kết quả trả về ở đây
+                if (data.status === 'success') {
+                // Kiểm tra giá trị 'result' để xác định trạng thái
+                    if (data.result === 'true') {
+                        // Thành công, hiển thị thông báo thành công
+                        alert('Pod created successfully and is running.');
+                    } else {
+                        // Lỗi, hiển thị thông báo lỗi
+                        alert('Error: Unable to create pod or pod is not running.');
+                    }
+                } else {
+                    // Xử lý trường hợp lỗi từ server
+                    alert('Server error. Please try again later.');
+        }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        function SendDataCreateQos() {
+            var podNameSource = document.getElementById('podNameSource').value;
+            var podNameDestination = document.getElementById('podNameDestination').value;
+            var min = document.getElementById('minBandwidth').value;
+            var max = document.getElementById('maxBandwidth').value;
+
+            fetch('/create_qos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    podNameSource: podNameSource,
+                    podNameDestination: podNameDestination,
+                    min: min,
+                    max: max
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Xử lý kết quả trả về ở đây
+                if (data.status === 'success') {
+                // Kiểm tra giá trị 'result' để xác định trạng thái
+                    if (data.result === 'true') {
+                        // Thành công, hiển thị thông báo thành công
+                        alert('Qos created successfully.');
+                    } else {
+                        // Lỗi, hiển thị thông báo lỗi
+                        alert(`Error: Unable to create Qos: ${data.result}`);
+                    }
+                } else {
+                            // Xử lý trường hợp lỗi từ server
+                            alert('Server error. Please try again later.');
+                        }
+                    })
+            .catch(error => console.error('Error:', error));
+        }
+
+        
+        document.addEventListener('DOMContentLoaded', getData);
+        document.addEventListener('DOMContentLoaded', getQos);
+        document.addEventListener('DOMContentLoaded', getListPodKubeOvn);
+        document.addEventListener('DOMContentLoaded', getListNode);
+
+        function getData() {
+            fetch('/list_pods')
+                .then(response => response.json())
+                .then(data => {
+                    createTable(data.result, "dataTable");
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        function getQos() {
+            fetch('/list_queue')
+                .then(response => response.json())
+                .then(data => {
+                    data = reorderData(data.result)
+                    createTable(data, "queueTable");
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+        function reorderData(data) {
+            return data.map(item => ({
+                "pod source": item["pod source"],
+                "pod destination": item["pod destination"],
+                "min": item.min,
+                "max": item.rate
+            }));
+        }
+        function getListNode() {
+            fetch('/list_nodes')
+                .then(response => response.json())
+                .then(data => {
+                    const dataSelect = document.getElementById("nodeName");
+                    dataSelect.innerHTML = '';
+
+                    // Điền dữ liệu vào ô lựa chọn
+                    data.result.forEach(choice => {                       
+                            const option = document.createElement('option');
+                            option.value = choice;  
+                            option.text = choice;
+                            dataSelect.add(option);                      
+                    });
+                });
+        }
+        
+        function createTable(data, id) {
+            const table = document.getElementById(id);
+            table.innerHTML = '';  // Clear previous table content
+
+            // Create table header
+            const headerRow = document.createElement('tr');
+            for (const key in data[0]) {
+                const th = document.createElement('th');
+                th.textContent = key;
+                headerRow.appendChild(th);
+            }
+            table.appendChild(headerRow);
+
+            // Create table rows
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                for (const key in item) {
+                    const cell = document.createElement('td');
+                    cell.textContent = item[key];
+                    row.appendChild(cell);
+                }
+                table.appendChild(row);
+            });
+        }
+        document.getElementById('resetButton').addEventListener('click', getData);
+       
+        document.getElementById('resetButton1').addEventListener('click', getQos);
+        
+
+        function showScreen(screenId) {
+            // Ẩn tất cả các màn hình
+            var screens = document.getElementsByClassName('screen');
+
+            for (var i = 0; i < screens.length; i++) {
+                screens[i].style.display = 'none';
+            }
+            // Hiển thị màn hình được chọn
+            var selectedScreen = document.getElementById(screenId);
+            if (selectedScreen) {
+                selectedScreen.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

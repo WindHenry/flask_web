@@ -1,0 +1,48 @@
+/* styles.css */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+}
+
+.container {
+    max-width: 100%;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #333;
+}
+
+.screen {
+    display: none;
+    padding: 20px;
+}
+
+#list-pod {
+    display: block;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    width: 100%;
+}
+
+th:nth-child(1), td:nth-child(1) { width: 45%; } /* IP */
+th:nth-child(2), td:nth-child(2) { width: 20%; } /* NODE_NAME */
+th:nth-child(3), td:nth-child(3) { width: 25%; } /* POD_NAME */
+th:nth-child(4), td:nth-child(4) { width: 10%; } /* STATUS */
